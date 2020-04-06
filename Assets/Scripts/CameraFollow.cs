@@ -22,7 +22,7 @@ public class CameraFollow : MonoBehaviour
 
     private void Start()
     {
-        updateCameraBounds();
+        UpdateCameraBounds();
         mainCam = GetComponent<Camera>();
         camOrthsize = mainCam.orthographicSize;
         cameraRatio = (xMax + camOrthsize) / 2.0f;
@@ -36,7 +36,7 @@ public class CameraFollow : MonoBehaviour
         this.transform.position = smoothPos;
     }
 
-    public void updateCameraBounds()
+    public void UpdateCameraBounds()
     {
         xMin = mapBounds.bounds.min.x;
         xMax = mapBounds.bounds.max.x;

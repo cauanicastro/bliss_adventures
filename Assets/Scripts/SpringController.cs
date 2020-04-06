@@ -31,6 +31,4 @@ public class SpringController : MonoBehaviour
     {
         anim.SetTrigger("isIdle");
     }
-
-
 }

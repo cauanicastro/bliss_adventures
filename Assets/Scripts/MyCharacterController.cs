@@ -51,7 +51,7 @@ public class MyCharacterController : MonoBehaviour
             {
                 Jump();
             }
-            BetterJump();
+            SmoothenJump();
         }
     }
 
@@ -66,10 +66,10 @@ public class MyCharacterController : MonoBehaviour
 
         if (this.isGrounded)
         {
-            anim.SetTrigger(isWalking(x) ? "isWalking" : "isIdle");
+            anim.SetTrigger(IsWalking(x) ? "isWalking" : "isIdle");
         }
 
-        if (shouldTurn(x))
+        if (ShouldTurn(x))
         {
             Flip();
         }
@@ -92,7 +92,17 @@ public class MyCharacterController : MonoBehaviour
         Jump(rb.velocity.x, jumpForce);
     }
 
-    void BetterJump()
+    public void Jump(float forceY)
+    {
+        Jump(rb.velocity.x, forceY);
+    }
+
+    public void JumpBack(float forceY)
+    {
+        Jump((rb.velocity.x * -1), forceY);
+    }
+
+    void SmoothenJump()
     {
         if (rb.velocity.y < 0)
         {
@@ -104,18 +114,7 @@ public class MyCharacterController : MonoBehaviour
         }
     }
 
-    public void Jump(float forceY)
-    {
-        Jump(rb.velocity.x, forceY);
-        anim.SetTrigger("isJumping");
-        rb.velocity = new Vector2(rb.velocity.x, forceY);
-        additionalJumps--;
-    }
-
-    public void JumpBack(float forceY)
-    {
-        Jump((rb.velocity.x * -1), forceY);
-    }
+   
 
     void CheckIfGrounded()
     {
@@ -164,12 +163,12 @@ public class MyCharacterController : MonoBehaviour
         return Input.GetButtonDown("Jump") && (isGrounded || Time.time - lastTimeGrounded <= rememberGroundedFor || additionalJumps > 0);
     }
 
-    bool isWalking(float translationX)
+    bool IsWalking(float translationX)
     {
         return translationX != 0 && this.isGrounded;
     }
 
-    bool shouldTurn(float translationX)
+    bool ShouldTurn(float translationX)
     {
         return ((translationX > 0 && !this.isPointingRight) || (translationX < 0 && this.isPointingRight));
     }

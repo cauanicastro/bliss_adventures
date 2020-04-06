@@ -22,7 +22,12 @@ public class GameManager
     public float playerMaxHealth = 100;
     public float playerLives = 3;
     public float playerGems = 0;
+    public int playerAditionalJumps = 0;
     public List<KeyScOb> playerKeys = new List<KeyScOb>();
+
+    [Header("Stage")]
+    public StageManagerController stageManager;
+
 
     private static GameManager instance;
 
@@ -64,16 +69,24 @@ public class GameManager
     private void LifeDecrease()
     {
         --playerLives;
-        //TODO: check if lives are under 0
+        if (playerLives < 0)
+        {
+            characterController.StartCoroutine(GameOver());
+            return;
+        }
         characterController.StartCoroutine(RestartScene());
     }
 
     private IEnumerator RestartScene()
     {
+        if (characterController.isDead) yield break;
+
         characterController.isDead = true;
         characterController.GetComponent<Animator>().SetTrigger("isDead");
-        yield return new WaitForSeconds(2f);
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        yield return new WaitForSeconds(1.5f);
+        characterController.StartCoroutine(DeactivatePowerups(0));
+
+        stageManager.RestartStage();
         hudController.RemoveLife();
 
         playerHealth = playerMaxHealth;
@@ -81,8 +94,27 @@ public class GameManager
         playerKeys = new List<KeyScOb>();
     }
 
-    private void GameOver()
+    private IEnumerator GameOver()
     {
-        //TODO: implement gameover logic
+        characterController.isDead = true;
+        characterController.GetComponent<Animator>().SetTrigger("isDead");
+        yield return new WaitForSeconds(1.5f);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        instance = new GameManager();
+    }
+
+    public void ActivateDoubleJumpPowerUp()
+    {
+        characterController.StopCoroutine("DeactivatePowerups");
+        characterController.additionalJumps = characterController.defaultAdditionalJumps = 2;
+        characterController.gameObject.GetComponent<SpriteRenderer>().color = Color.red;
+        characterController.StartCoroutine(DeactivatePowerups(10));
+    }
+
+    public IEnumerator DeactivatePowerups(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        characterController.gameObject.GetComponent<SpriteRenderer>().color = Color.white;
+        characterController.defaultAdditionalJumps = characterController.additionalJumps = playerAditionalJumps;
     }
 }

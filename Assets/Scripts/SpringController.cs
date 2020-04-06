@@ -6,7 +6,6 @@ public class SpringController : MonoBehaviour
 {
     private GameManager gm;
     private Animator anim;
-    // Start is called before the first frame update
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -23,7 +22,7 @@ public class SpringController : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             anim.SetTrigger("isActive");
-            gm.characterController.Jump(8);
+            gm.characterController.Jump(10);
         }
     }
 

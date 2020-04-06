@@ -2,8 +2,10 @@
 
 public class MyCharacterController : MonoBehaviour
 {
-    Animator anim;
-    Rigidbody2D rb;
+    [HideInInspector]
+    public Animator anim;
+    [HideInInspector]
+    public Rigidbody2D rb;
     BoxCollider2D bc;
 
     public float speed;
@@ -20,10 +22,13 @@ public class MyCharacterController : MonoBehaviour
     public LayerMask groundLayer;
 
     public float rememberGroundedFor;
+
     float lastTimeGrounded;
 
+    [HideInInspector]
     public int defaultAdditionalJumps = 1;
-    int additionalJumps;
+    [HideInInspector]
+    public int additionalJumps;
 
     [HideInInspector]
     public bool isDead = false;
@@ -36,9 +41,9 @@ public class MyCharacterController : MonoBehaviour
         anim = GetComponent<Animator>();
         bc = GetComponent<BoxCollider2D>();
 
-        additionalJumps = defaultAdditionalJumps;
-
         StartPlayer();
+        defaultAdditionalJumps = gm.playerAditionalJumps;
+        additionalJumps = defaultAdditionalJumps;
     }
 
     void Update()
@@ -68,7 +73,6 @@ public class MyCharacterController : MonoBehaviour
         {
             anim.SetTrigger(IsWalking(x) ? "isWalking" : "isIdle");
         }
-
         if (ShouldTurn(x))
         {
             Flip();
@@ -80,6 +84,7 @@ public class MyCharacterController : MonoBehaviour
         isPointingRight = !isPointingRight;
         transform.Rotate(0f, 180f, 0f);
     }
+
     void Jump(float forcex, float forceY)
     {
         anim.SetTrigger("isJumping");
@@ -113,8 +118,6 @@ public class MyCharacterController : MonoBehaviour
             rb.velocity += Vector2.up * Physics2D.gravity * (lowJumpMultiplier - 1) * Time.deltaTime;
         }
     }
-
-   
 
     void CheckIfGrounded()
     {
@@ -156,6 +159,14 @@ public class MyCharacterController : MonoBehaviour
         gm = GameManager.GetInstance();
         gm.characterController = this;
         gm.playerPos = transform;
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("MortalDanger"))
+        {
+            gm.DealDamage(gm.playerMaxHealth);
+        }
     }
 
     bool shouldJump()

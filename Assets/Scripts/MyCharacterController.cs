@@ -26,6 +26,11 @@ public class MyCharacterController : MonoBehaviour
     float lastTimeGrounded;
 
     [HideInInspector]
+    public AudioSource audioSource;
+    public AudioClip jumpSound;
+    public AudioClip deathSound;
+
+    [HideInInspector]
     public int defaultAdditionalJumps = 1;
     [HideInInspector]
     public int additionalJumps;
@@ -40,6 +45,7 @@ public class MyCharacterController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         bc = GetComponent<BoxCollider2D>();
+        audioSource = GetComponent<AudioSource>();
 
         StartPlayer();
         defaultAdditionalJumps = gm.playerAditionalJumps;
@@ -48,11 +54,11 @@ public class MyCharacterController : MonoBehaviour
 
     void Update()
     {
-        CheckIfGrounded();
+        CheckIfIsGrounded();
         if (!isDead)
         {
             Move();
-            if (shouldJump())
+            if (ShouldJump())
             {
                 Jump();
             }
@@ -64,7 +70,7 @@ public class MyCharacterController : MonoBehaviour
     {
         float x = Input.GetAxisRaw("Horizontal");
 
-        if (CheckIfColidingFront() && ((x == 1 && isPointingRight) || (x == -1 && !isPointingRight))  ) return;
+        if (IsColidingFront() && ((x == 1 && isPointingRight) || (x == -1 && !isPointingRight))  ) return;
 
         float moveBy = x * speed;
         rb.velocity = new Vector2(moveBy, rb.velocity.y);
@@ -94,6 +100,7 @@ public class MyCharacterController : MonoBehaviour
 
     void Jump()
     {
+        audioSource.PlayOneShot(jumpSound);
         Jump(rb.velocity.x, jumpForce);
     }
 
@@ -119,10 +126,10 @@ public class MyCharacterController : MonoBehaviour
         }
     }
 
-    void CheckIfGrounded()
+    void CheckIfIsGrounded()
     {
-        Collider2D colliders = Physics2D.OverlapCircle(groundCollider.position, checkGroundRadius, groundLayer);
-
+        Collider2D colliders = Physics2D.OverlapBox(groundCollider.position, new Vector2(bc.size.x - 0.15f, 0.1f), 0, groundLayer);
+        
         if (colliders != null)
         {
             isGrounded = true;
@@ -135,16 +142,16 @@ public class MyCharacterController : MonoBehaviour
                 lastTimeGrounded = Time.time;
             }
             isGrounded = false;
-            CheckIfFellToDeath();
+            IsFallingToDeath();
         }
     }
 
-    bool CheckIfColidingFront()
+    bool IsColidingFront()
     {
-        return Physics2D.OverlapBox(frontCollider.position, new Vector2(1, bc.size.y), 0, groundLayer);
+        return Physics2D.OverlapBox(frontCollider.position, new Vector2(0.015f, bc.size.y - 0.05f), 0, groundLayer);
     }
 
-    void CheckIfFellToDeath()
+    void IsFallingToDeath()
     {
         if (isDead) return;
         if (gm.cameraHandler.yMin > transform.position.y)
@@ -163,13 +170,14 @@ public class MyCharacterController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (isDead) return;
         if (collision.gameObject.CompareTag("MortalDanger"))
         {
             gm.DealDamage(gm.playerMaxHealth);
         }
     }
 
-    bool shouldJump()
+    bool ShouldJump()
     {
         return Input.GetButtonDown("Jump") && (isGrounded || Time.time - lastTimeGrounded <= rememberGroundedFor || additionalJumps > 0);
     }
@@ -182,5 +190,12 @@ public class MyCharacterController : MonoBehaviour
     bool ShouldTurn(float translationX)
     {
         return ((translationX > 0 && !this.isPointingRight) || (translationX < 0 && this.isPointingRight));
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(frontCollider.position, new Vector2(0.015f, bc.size.y));
+        Gizmos.DrawWireCube(groundCollider.position, new Vector2(bc.size.x - 0.15f, 0.1f));
     }
 }

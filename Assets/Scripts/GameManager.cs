@@ -31,7 +31,7 @@ public class GameManager
 
     private static GameManager instance;
 
-    private GameManager() {}
+    private GameManager() { }
 
     public static GameManager GetInstance()
     {
@@ -40,6 +40,18 @@ public class GameManager
             instance = new GameManager();
         }
         return instance;
+    }
+
+    public void AddGem()
+    {
+        playerGems++;
+        hudController.DisplayGemAmount();
+    }
+
+    public void RemoveGem()
+    {
+        playerGems--;
+        hudController.DisplayGemAmount();
     }
 
     public void KeyFind(KeyScOb key)
@@ -64,51 +76,60 @@ public class GameManager
     public void LifeIncrease()
     {
         ++playerLives;
+        hudController.AddLife();
     }
 
     private void LifeDecrease()
     {
         --playerLives;
-        if (playerLives < 0)
+        if (playerLives <= 0)
         {
             characterController.StartCoroutine(GameOver());
             return;
         }
-        characterController.StartCoroutine(RestartScene());
+        characterController.StartCoroutine(RestartFromCheckpoint());
     }
 
-    private IEnumerator RestartScene()
+    private void PlayerDeathRoutine()
+    {
+        characterController.isDead = true;
+        characterController.audioSource.PlayOneShot(characterController.deathSound);
+        characterController.StartCoroutine(DeactivatePowerups(0));
+        characterController.GetComponent<Animator>().SetTrigger("isDead");
+    }
+
+    private IEnumerator RestartFromCheckpoint()
     {
         if (characterController.isDead) yield break;
 
-        characterController.isDead = true;
-        characterController.GetComponent<Animator>().SetTrigger("isDead");
+        PlayerDeathRoutine();
         yield return new WaitForSeconds(1.5f);
-        characterController.StartCoroutine(DeactivatePowerups(0));
 
         stageManager.RestartStage();
         hudController.RemoveLife();
 
         playerHealth = playerMaxHealth;
-        playerGems = 0;
-        playerKeys = new List<KeyScOb>();
     }
 
     private IEnumerator GameOver()
     {
-        characterController.isDead = true;
-        characterController.GetComponent<Animator>().SetTrigger("isDead");
+        if (characterController.isDead) yield break;
+
+        PlayerDeathRoutine();
         yield return new WaitForSeconds(1.5f);
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         instance = new GameManager();
     }
 
-    public void ActivateDoubleJumpPowerUp()
+    public void ActivateDoubleJumpPowerUp(float timeout)
     {
         characterController.StopCoroutine("DeactivatePowerups");
         characterController.additionalJumps = characterController.defaultAdditionalJumps = 2;
-        characterController.gameObject.GetComponent<SpriteRenderer>().color = Color.red;
-        characterController.StartCoroutine(DeactivatePowerups(10));
+        characterController.gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 0, 0, 0.6f);
+        if (timeout > 0)
+        {
+            characterController.StartCoroutine(DeactivatePowerups(timeout));
+        }
     }
 
     public IEnumerator DeactivatePowerups(float delay)

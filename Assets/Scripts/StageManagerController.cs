@@ -28,9 +28,9 @@ public class StageManagerController : MonoBehaviour
     {
         GameObject player = gm.characterController.gameObject;
         gm.characterController.rb.velocity = Vector2.zero;
-        gm.characterController.isDead = false;
         gm.characterController.anim.Rebind();
         player.transform.position = teleportLocation.position;
+        gm.characterController.isDead = false;
     }
 
     public void RestartStage()

@@ -10,12 +10,13 @@ public class HudController : MonoBehaviour
     private Stack<GameObject> livesStack;
     public float maxLives;
     public GameObject lifeToSpawn;
+    public float lifeSpacing = 5;
     public Vector3 livesPosition;
-
-    public Text gemsCount;
 
     private Stack<GameObject> keysStack;
     public Vector3 keysPosition;
+    public Sprite[] numbers;
+    public Image[] gemsCount;
 
 
     private void Start()
@@ -31,13 +32,20 @@ public class HudController : MonoBehaviour
 
         keysStack = new Stack<GameObject>();
         gm.playerKeys.ForEach(key => AddKey(key));
+        DisplayGemAmount();
     }
 
-    private void Update()
+    public void DisplayGemAmount()
     {
-        if (gemsCount)
+        foreach (Image gc in gemsCount)
         {
-            gemsCount.text = gm.playerGems.ToString();
+            gc.enabled = false;
+        }
+        string gems = gm.playerGems.ToString();
+        for (int count = 0; count < gems.Length; count++)
+        {
+            gemsCount[count].sprite = numbers[int.Parse(gems[count].ToString())];
+            gemsCount[count].enabled = true;
         }
     }
 
@@ -88,7 +96,7 @@ public class HudController : MonoBehaviour
             return livesPosition;
         }
         RectTransform lastLife = livesStack.Peek().GetComponent<RectTransform>();
-        return new Vector3(lastLife.anchoredPosition.x + lastLife.rect.width + 1, lastLife.anchoredPosition.y, 0);
+        return new Vector3(lastLife.anchoredPosition.x + lastLife.rect.width + lifeSpacing, lastLife.anchoredPosition.y, 0);
     }
 
     public Vector3 GetNextKeyPosition()

@@ -6,23 +6,26 @@ public class SpringController : MonoBehaviour
 {
     private GameManager gm;
     private Animator anim;
+    private AudioSource audioSource;
+
+    public AudioClip springSound;
+    public float jumpForce = 10;
+
     void Start()
     {
         anim = GetComponent<Animator>();
         gm = GameManager.GetInstance();
+        audioSource = GetComponent<AudioSource>();
     }
 
-    void Update()
-    {
-
-    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
+            audioSource.PlayOneShot(springSound);
             anim.SetTrigger("isActive");
-            gm.characterController.Jump(10);
+            gm.characterController.Jump(jumpForce);
         }
     }
 

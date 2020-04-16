@@ -192,10 +192,12 @@ public class MyCharacterController : MonoBehaviour
         return ((translationX > 0 && !this.isPointingRight) || (translationX < 0 && this.isPointingRight));
     }
 
+    /*
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(frontCollider.position, new Vector2(0.015f, bc.size.y));
         Gizmos.DrawWireCube(groundCollider.position, new Vector2(bc.size.x - 0.15f, 0.1f));
     }
+    */
 }
